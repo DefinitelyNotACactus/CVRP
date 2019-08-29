@@ -3,25 +3,20 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change thi
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 /**
  *
- * @author iot
+ * @author pablo suria, david galvao
  */
+
 public class ProblemInstance {
 
     public String name;
@@ -39,12 +34,13 @@ public class ProblemInstance {
     }
 
     /**
-     * Finds the central client
+     * Finds routes for a problem instance
      * @return
      */
     public List<Integer> routeBuilder() {
-        int sum = 0, smallest = Integer.MAX_VALUE, centralElement, smallestDistance, biggestDistance;
+        int sum = 0, smallest = Integer.MAX_VALUE, centralElement=0, smallestDistance=0, biggestDistance=0;
 
+        //finds the most "central" client and the smallest and biggest distances between the central client and all the other clients
         for(int i = 0, smallestOnLine = 0, biggestOnLine = 0; i < dimension; i++, sum = 0, smallestOnLine = 0, biggestOnLine = 0) {
             for(int j = 0; j < dimension; j++) {
                 sum += adjacency[i][j];
@@ -52,10 +48,11 @@ public class ProblemInstance {
                 if(adjacency[i][j] > adjacency[i][biggestOnLine]) {
                     biggestOnLine = j;
                 }
-                if(adjacency[i][j] < adjacency[i][smallestOnLine]) {
+                else if(adjacency[i][j] < adjacency[i][smallestOnLine] && i != j) {
                     smallestOnLine = j;
                 }
             }
+
             if(sum < smallest) {
                 smallest = sum;
                 centralElement = i;
@@ -63,6 +60,29 @@ public class ProblemInstance {
                 smallestDistance = smallestOnLine;
             }
         }
+
+        //Calculates the radius of the groups
+        int radius = (adjacency[centralElement][biggestDistance] - adjacency[centralElement][smallestDistance])/vehicles;
+        //create the groups
+        ArrayList<ArrayList<Integer>> groups = new ArrayList<ArrayList<Integer>>();
+        for(int i = 0; i < (adjacency[centralElement][biggestDistance] - adjacency[centralElement][smallestDistance])/radius + 1; i++)
+            groups.add(new ArrayList<Integer>());
+
+        //allocates every client in a group
+        for(int i = 1; i <= groups.size(); i++) {
+            for(int j = 0; j < dimension; j++) {
+                if( (adjacency[centralElement][smallestDistance] + (i-1)*radius) <= adjacency[centralElement][j] && adjacency[centralElement][j] < (adjacency[centralElement][smallestDistance] + i*radius)){
+                    groups.get(i-1).add(j);
+                }
+            }
+        }
+        
+        
+
+        
+
+
+
         //TODO
         return null;
     }
