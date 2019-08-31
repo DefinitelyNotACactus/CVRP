@@ -5,6 +5,9 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        ProblemInstance instances = ProblemInstance.parseFile("./instancias_teste/P-n16-k8.txt");
+        long start = System.currentTimeMillis();
+        ProblemInstance instances = ProblemInstance.parseFile("./instancias_teste/P-n55-k7.txt");
+        long end = System.currentTimeMillis();
+        System.out.println("" + (end - start) + " ms");
     }
 }

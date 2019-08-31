@@ -6,22 +6,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change thi
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-/**
- *
- * @author iot
- */
 public class ProblemInstance {
 
     public String name;
@@ -29,13 +13,15 @@ public class ProblemInstance {
     public int vehicles;
     public int capacity;
     public int[][] adjacency;
+    public int[] demand;
 
-    public ProblemInstance(String name, int dimension, int vehicles, int capacity, int[][] adjacency) {
+    public ProblemInstance(String name, int dimension, int vehicles, int capacity, int[][] adjacency, int[] demand) {
         this.name = name;
         this.dimension = dimension;
         this.vehicles = vehicles;
         this.capacity = capacity;
         this.adjacency = adjacency;
+        this.demand = demand;
     }
 
     /**
@@ -71,7 +57,7 @@ public class ProblemInstance {
         String name = null;
         int dimension = 0, vehicles = 0, capacity = 0, count = 0;
         int[][] adjacency = null;
-
+        int[] demand = null;
         try {
             File inputFile = new File(path);
             BufferedReader in = new BufferedReader(new FileReader(inputFile));
@@ -87,6 +73,7 @@ public class ProblemInstance {
                     case "DIMENSION:":
                         dimension = Integer.parseInt(words[1]);
                         adjacency = new int[dimension][dimension];
+                        demand = new int[dimension];
                         break;
                     case "VEHICLES:":
                         vehicles = Integer.parseInt(words[1]);
@@ -94,15 +81,18 @@ public class ProblemInstance {
                     case "CAPACITY:":
                         capacity = Integer.parseInt(words[1]);
                         break;
+                    case "DEMAND_SECTION:":
+                        for(int i = 0; i < dimension; i++) {
+                            line = in.readLine();
+                            words = line.trim().split(" +");
+                            demand[i] = Integer.parseInt(words[1]);
+                        }
                     case "EDGE_WEIGHT_SECTION":
+                    case "":
                         continue;
                     default:
-                        if (count < dimension) {
-                            for (int i = 0; i < words.length; i++) {
-                                adjacency[count][i] = Integer.parseInt(words[i]);
-                            }
-                        } else {
-                            break;
+                        for (int i = 0; i < dimension; i++) {
+                            adjacency[count][i] = Integer.parseInt(words[i]);
                         }
                         count++;
                 }
@@ -111,6 +101,6 @@ public class ProblemInstance {
             System.out.println("Error while parsing file: ");
             ex.printStackTrace();
         }
-        return new ProblemInstance(name, dimension, vehicles, capacity, adjacency);
+        return new ProblemInstance(name, dimension, vehicles, capacity, adjacency, demand);
     }
 }
