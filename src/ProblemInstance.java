@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ProblemInstance {
@@ -30,28 +31,40 @@ public class ProblemInstance {
      */
     public List<Integer> routeBuilder() {
         int sum = 0, smallest = Integer.MAX_VALUE, centralElement=0, smallestDistance=0, biggestDistance=0;
+        Edge[] edgesA = new Edge[dimension - 1];
+        Route[] routes = new Route[vehicles];
 
-        //finds the most "central" client and the smallest and biggest distances between the central client and all the other clients
-        for(int i = 0, smallestOnLine = 0, biggestOnLine = 0; i < dimension; i++, sum = 0, smallestOnLine = 0, biggestOnLine = 0) {
-            for(int j = 0; j < dimension; j++) {
-                sum += adjacency[i][j];
-
-                if(adjacency[i][j] > adjacency[i][biggestOnLine]) {
-                    biggestOnLine = j;
-                }
-                else if(adjacency[i][j] < adjacency[i][smallestOnLine] && i != j) {
-                    smallestOnLine = j;
-                }
-            }
-
-            if(sum < smallest) {
-                smallest = sum;
-                centralElement = i;
-                biggestDistance = biggestOnLine;
-                smallestDistance = smallestOnLine;
+        int max = 0, min = Integer.MAX_VALUE;
+        for(int i = 1; i < dimension; i++) {
+            edgesA[i] = new Edge(0, i, adjacency[0][i], demand[i]);
+            if(edgesA[i].distance < min) {
+                min = edgesA[i].distance;
+            } else if(edgesA[i].distance > max) {
+                max = edgesA[i].distance;
             }
         }
+        int[] count = new int[max - min + 1];
+        for(int i = 0; i < edgesA.length; i++) {
+            count[edgesA[i].distance - min]++;
+        }
+        for(int i = 1; i < count.length; i++) {
+            count[i] += count[i - 1];
+        }
+        Edge[] out = new Edge[dimension - 1];
+        for(int i = out.length - 1; i >= 0; i--) {
+            out[count[edgesA[i].distance - min] - 1] = edgesA[i];
+            count[edgesA[i].distance - min]--;
+        }
+        edgesA = out;
 
+        for(int i = 0; i < vehicles; i++) {
+            routes[i] = new Route(capacity);
+            routes[i].path.add(edgesA[i]);
+        }
+
+        for(int i = 0; i < vehicles; i++) {
+        }
+        /*
         //Calculates the radius of the groups
         int radius = (adjacency[centralElement][biggestDistance] - adjacency[centralElement][smallestDistance])/vehicles;
         //create the groups
@@ -67,7 +80,7 @@ public class ProblemInstance {
                 }
             }
         }
-
+        */
 
 
 
@@ -127,5 +140,41 @@ public class ProblemInstance {
             ex.printStackTrace();
         }
         return new ProblemInstance(name, dimension, vehicles, capacity, adjacency, demand);
+    }
+
+    static class Route {
+        List<Edge> path;
+        int capacity;
+        int cost;
+
+        Route(int capacity) {
+            path = new ArrayList<>();
+            this.capacity = capacity;
+            cost = 0;
+        }
+
+        public boolean addEdge(Edge edge) {
+            if(edge.demand > capacity) {
+                return false;
+            }
+            capacity -= edge.demand;
+            cost += edge.distance;
+            path.add(edge);
+            return true;
+        }
+    }
+
+    static class Edge {
+        int a;
+        int b;
+        int distance;
+        int demand;
+
+        Edge(int a, int b, int distance, int demand) {
+            this.a = a;
+            this.b = b;
+            this.distance = distance;
+            this.demand = demand;
+        }
     }
 }
