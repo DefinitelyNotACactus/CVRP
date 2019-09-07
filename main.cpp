@@ -89,7 +89,6 @@ int main(int argc, char** argv) {
     }
     srand(seed);
     std::cout << "Seed  = " << seed << std::endl;
-
     std::string file_path(argv[1]);
     parseFile(file_path);
     traceRoute();
@@ -345,15 +344,15 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
         return false;
     }
 
-#ifdef DEBUG_VND
-    std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
-#endif
+    #ifdef DEBUG_VND
+        std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
+    #endif
     int aux = routeA[r], aux2 = route_demand[indexA];
     routeA[r] = routeB[exchange[r]];
     routeB[exchange[r]] = aux;
     
-    route_demand[indexA] = route_demand[indexB];
-    route_demand[indexB] = aux2;
+    route_demand[indexA] = route_demand[indexA] - demand[routeB[exchange[r]]] + demand[routeA[r]];
+    route_demand[indexB] = route_demand[indexB] - demand[routeA[r]] + demand[routeB[exchange[r]]];
     
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
         greedyBestRoute(indexA);
@@ -370,8 +369,8 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
         routeA[r] = routeB[exchange[r]];
         routeB[exchange[r]] = aux;
         
-        route_demand[indexA] = route_demand[indexB];
-        route_demand[indexB] = aux2;
+        route_demand[indexA] = route_demand[indexA] - demand[routeB[exchange[r]]] + demand[routeA[r]];
+        route_demand[indexB] = route_demand[indexB] - demand[routeA[r]] + demand[routeB[exchange[r]]];
         return false;
     }
 }
@@ -400,9 +399,9 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     if(i == routeBSize - 1) {
         return false;
     }
-#ifdef DEBUG_VND
-    std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
-#endif
+    #ifdef DEBUG_VND
+        std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
+    #endif
     int aux = routeA[target1A], aux2 = route_demand[indexA];
     routeA[target1A] = routeB[target1B];
     routeB[target1B] = aux;
@@ -415,11 +414,11 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
         greedyBestRoute(indexA);
         greedyBestRoute(indexB);
-#ifdef DEBUG_VND
+    #ifdef DEBUG_VND
         std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
         std::cout << "New cost A= " << routeCost(routeA, routeASize) << " New cost B= " << routeCost(routeB, routeBSize) << std::endl;
-#endif
+    #endif
         return true;
     } else {
         aux = routeA[target1A];
