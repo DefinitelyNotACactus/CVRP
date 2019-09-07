@@ -11,7 +11,6 @@
 
 #define MAX_INT 2147483647
 
-
 std::string instance_name;
 int dimension, vehicles, capacity, totalCost;
 int *demand, *route_demand;
@@ -72,6 +71,7 @@ void debugSort(){
 //Declaracao das funcoes
 void parseFile(std::string file_path);
 void traceRoute();
+void greedyBestRoute(int route);
 void sort();
 int routeCost(int* route, int routeSize);
 int getCost();
@@ -174,21 +174,26 @@ void traceRoute() {
     }
 
     for(int r = 0; r < vehicles; r++) {
-        for(int i = 0; i < routes[vehicles][r]-2; i++) {
-            int smallest = i+1;
-            for(int j = i+2; j < routes[vehicles][r]-1; j++) {
-                if(adjacency[ routes[r][i] ][ routes[r][j] ] <= adjacency[ routes[r][i] ][ routes[r][smallest] ]) {
-                    smallest = j;
-                }
-            }
-            int aux = routes[r][i+1];
-            routes[r][i+1] = routes[r][smallest];
-            routes[r][smallest] = aux;
-        }
+        greedyBestRoute(r);
     }
     #ifdef DEBUG_ROUTE
         debugRoute();
     #endif
+}
+
+// Funcao gulosa para melhorar a rota
+void greedyBestRoute(int route) {
+    for(int i = 0; i < routes[vehicles][route]-2; i++) {
+        int smallest = i+1;
+        for(int j = i+2; j < routes[vehicles][route]-1; j++) {
+            if(adjacency[ routes[route][i] ][ routes[route][j] ] <= adjacency[ routes[route][i] ][ routes[route][smallest] ]) {
+                smallest = j;
+            }
+        }
+        int aux = routes[route][i+1];
+        routes[route][i+1] = routes[route][smallest];
+        routes[route][smallest] = aux;
+    }
 }
 
 // Funcao de apoio para traceRoute que ordena os clientes da maneira desejada
@@ -223,7 +228,7 @@ int routeCost(int* route, int routeSize) {
     return sum;
 }
 
-// Funcao que calcula o preco de todas as rotas de uam solucao
+// Funcao que calcula o preco de todas as rotas de uma solucao
 int getCost() {
     int sum = 0, i;
     for(i = 0; i < vehicles; i++) {
@@ -351,6 +356,8 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     route_demand[indexB] = aux2;
     
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
+        greedyBestRoute(indexA);
+        greedyBestRoute(indexB);
         #ifdef DEBUG_VND
         std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
@@ -406,13 +413,13 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     route_demand[indexA] = route_demand[indexB];
     route_demand[indexB] = aux2;
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
-        #ifdef DEBUG_VND
+        greedyBestRoute(indexA);
+        greedyBestRoute(indexB);
 #ifdef DEBUG_VND
         std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
         std::cout << "New cost A= " << routeCost(routeA, routeASize) << " New cost B= " << routeCost(routeB, routeBSize) << std::endl;
 #endif
-        #endif
         return true;
     } else {
         aux = routeA[target1A];
