@@ -408,9 +408,10 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     aux = routeA[target2A];
     routeA[target2A] = routeB[target2B];
     routeB[target2B] = aux;
-    
-    route_demand[indexA] = route_demand[indexB];
-    route_demand[indexB] = aux2;
+
+    route_demand[indexA] = route_demand[indexA] - demand[routeB[target1B]] - demand[routeB[target2B]] + demand[routeA[target1A]] + demand[routeA[target2A]];
+    route_demand[indexB] = route_demand[indexB] - demand[routeA[target1A]] - demand[routeA[target1A]] + demand[routeB[target1B]] + demand[routeB[target2B]];
+
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
         greedyBestRoute(indexA);
         greedyBestRoute(indexB);
@@ -429,8 +430,8 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
         routeA[target2A] = routeB[target2B];
         routeB[target2B] = aux;
         
-        route_demand[indexA] = route_demand[indexB];
-        route_demand[indexB] = aux2;
+        route_demand[indexA] = route_demand[indexA] - demand[routeB[target1B]] - demand[routeB[target2B]] + demand[routeA[target1A]] + demand[routeA[target2A]];
+        route_demand[indexB] = route_demand[indexB] - demand[routeA[target1A]] - demand[routeA[target1A]] + demand[routeB[target1B]] + demand[routeB[target2B]];
         return false;
     }
 }     
