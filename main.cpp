@@ -82,7 +82,10 @@ int main(int argc, char** argv) {
 void parseFile(std::string file_path) {
     std::ifstream file(file_path);
     std::string aux;
-    
+    if(!file.is_open()) {
+        std::cout << "Error while opening file: " << file_path << std::endl;
+        exit(1);
+    }
     file >> aux; // NAME:
     file >> instance_name;
     file >> aux; // DIMENSION:
@@ -260,7 +263,7 @@ void VND(){
                     i = rand()%vehicles;
                     j = rand()%vehicles;
                 }while(i == j);
-                for(int k = 0; k < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, k++) {
+                for(int l = 0; l < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, l++) {
                     nbhdL2(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i, j);
                 }
                 break;
@@ -269,24 +272,24 @@ void VND(){
                     i = rand()%vehicles;
                     j = rand()%vehicles;
                 }while(i == j);
-                for(int k = 0; k < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, k++) {
+                for(int l = 0; l < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, l++) {
                     nbhdL3(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i, j);
                 }
                 break;
             }
             #ifdef DEBUG_VND
-                std::cout << "VND new cost " << getCost() << std::endl;
+                std::cout << "VND new cost " << getCost() << " k = " << k << std::endl;
             #ifdef DEBUG_ROUTE
                 showRoutes();
             #endif
             #endif
-            if(getCost() < formerCost)
+            if(getCost() < formerCost) {
+                improvemment = true;
                 k = 1;
-            else
+            } else {
                 k++;
+            }
         }
-
-        
     }
 }
 
@@ -358,8 +361,8 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     route_demand[indexB] = route_demand[indexB] - demand[routeA[r]] + demand[routeB[exchange[r]]];
     
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
-        greedyBestRoute(indexA);
-        greedyBestRoute(indexB);
+        nbhdL1(routes[indexA],routes[vehicles][indexA]);
+        nbhdL1(routes[indexB],routes[vehicles][indexB]);
         #ifdef DEBUG_VND
         std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
@@ -416,8 +419,8 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     route_demand[indexB] = route_demand[indexB] - demand[routeA[target1A]] - demand[routeA[target2A]] + demand[routeB[target1B]] + demand[routeB[target2B]];
 
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
-        greedyBestRoute(indexA);
-        greedyBestRoute(indexB);
+        nbhdL1(routes[indexA],routes[vehicles][indexA]);
+        nbhdL1(routes[indexB],routes[vehicles][indexB]);
     #ifdef DEBUG_VND
         std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
