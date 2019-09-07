@@ -76,7 +76,7 @@ int routeCost(int* route, int routeSize);
 int getCost();
 void VND();
 bool nbhdL1(int* route, int routeSize);
-bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA);
+bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA, int indexB);
 bool nbhdL3(int* routeA, int* routeB, int RouteASize, int routeBSize, int indexA, int indexB);
 //void deallocate();
 
@@ -250,7 +250,7 @@ void VND(){
                     j = rand()%vehicles;
                 }while(i == j);
                 for(int k = 0; k < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, k++) {
-                    nbhdL2(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i);
+                    nbhdL2(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i, j);
                 }
                 break;
             case 3:
@@ -308,7 +308,7 @@ bool nbhdL1(int* route, int routeSize) {
  
  // Funcao que cria um par vizinhos do nivel N2 aleatorio e calcula se esses vizinhos
  // tem custos menores que as antigas solucoes
-bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA) {
+bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA, int indexB) {
     #ifdef DEBUG_VND
     std::cout << "Called nbhdL2" << std::endl;
     #endif
@@ -321,7 +321,8 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     #endif
     for(int i = 1; i < routeASize - 1; i++) {
         for(int j = 1; j < routeBSize - 1; j++) {
-            if(demand[routeB[j]] <= (demand[routeA[i]] + capacity - route_demand[indexA])) {
+            if( demand[routeB[j]] <= (demand[routeA[i]] + capacity - route_demand[indexA])
+                && demand[routeA[i]] <= (demand[routeB[j]] + capacity - route_demand[indexB]) ) {
                 exchange[i] = j;
                 matches++;
                 continue;
