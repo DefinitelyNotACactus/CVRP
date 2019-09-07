@@ -36,30 +36,6 @@ void debugParser() {
 }
 #endif
 
-#ifdef DEBUG_ROUTE
-void debugRoute(){
-    int *points = new int[dimension];
-    
-    std::cout << "Instance " << instance_name << " Capacity " << capacity << std::endl;
-    for(int i = 0; i < vehicles; i++){
-        std::cout << "Route " << i+1 << ": ";
-        for(int j = 0; j < routes[vehicles][i]; j++){
-            std::cout << routes[i][j] << " | ";
-            points[ routes[i][j] ]++;
-        }
-        std::cout << std::endl;
-        std::cout << "Demand " << route_demand[i] << std::endl;
-    }
-
-    for(int i = 0; i < dimension; i++){
-        if(!points[i])
-        std::cout << "Missing " << i << std::endl;
-    }
-    
-    delete[] points;
-}
-#endif
-
 #ifdef DEBUG_SORT
 void debugSort(){
     for(int i = 0; i < dimension; i++) {
@@ -72,6 +48,7 @@ void debugSort(){
 void parseFile(std::string file_path);
 void traceRoute();
 void greedyBestRoute(int route);
+void showRoutes();
 void sort();
 int routeCost(int* route, int routeSize);
 int getCost();
@@ -79,7 +56,7 @@ void VND();
 bool nbhdL1(int* route, int routeSize);
 bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA, int indexB);
 bool nbhdL3(int* routeA, int* routeB, int RouteASize, int routeBSize, int indexA, int indexB);
-//void deallocate();
+void deallocate();
 
 
 int main(int argc, char** argv) {
@@ -95,6 +72,8 @@ int main(int argc, char** argv) {
     std::cout << "INSTANCE: " << instance_name << " TOTAL COST: " << getCost() << std::endl;
     VND();
     std::cout << "INSTANCE: " << instance_name << " TOTAL COST (VND): " << getCost() << std::endl;
+    showRoutes();
+    deallocate();
     return 0;
 }
 
@@ -175,8 +154,9 @@ void traceRoute() {
     for(int r = 0; r < vehicles; r++) {
         greedyBestRoute(r);
     }
+    
     #ifdef DEBUG_ROUTE
-        debugRoute();
+        showRoutes();
     #endif
 }
 
@@ -193,6 +173,29 @@ void greedyBestRoute(int route) {
         routes[route][i+1] = routes[route][smallest];
         routes[route][smallest] = aux;
     }
+}
+
+//imprime as rotas e suas demandas
+void showRoutes(){
+    int *points = new int[dimension];
+    
+    std::cout << "Instance " << instance_name << " Capacity " << capacity << std::endl;
+    for(int i = 0; i < vehicles; i++){
+        std::cout << "Route " << i+1 << ": ";
+        for(int j = 0; j < routes[vehicles][i]; j++){
+            std::cout << routes[i][j] << " | ";
+            points[ routes[i][j] ]++;
+        }
+        std::cout << std::endl;
+        std::cout << "Demand " << route_demand[i] << std::endl;
+    }
+
+    for(int i = 0; i < dimension; i++){
+        if(!points[i])
+        std::cout << "Missing " << i << std::endl;
+    }
+    
+    delete[] points;
 }
 
 // Funcao de apoio para traceRoute que ordena os clientes da maneira desejada
@@ -274,7 +277,7 @@ void VND(){
             #ifdef DEBUG_VND
                 std::cout << "VND new cost " << getCost() << std::endl;
             #ifdef DEBUG_ROUTE
-                debugRoute();
+                showRoutes();
             #endif
             #endif
             if(getCost() < formerCost)
@@ -437,11 +440,17 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
 }     
 
 // Funcao que desaloca todos os recursos utilizados durante esse programa
-/*void deallocate() {
-    delete [] demand;
+void deallocate() {
+    delete[] demand;
+    delete[] route_demand;
+    delete[] clients;
     for(int i = 0; i < dimension; i++) {
-        delete [] adjacency[i];
-        delete [] routes[i];
+        delete[] adjacency[i];
     }
-}*/
+    for(int i = 0; i < vehicles+1; i++) {
+        delete[] routes[i];
+    }
+    delete[] adjacency;
+    delete[] routes;
+}
 
