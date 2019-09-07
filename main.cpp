@@ -163,6 +163,17 @@ void traceRoute() {
     #endif
 }
 
+void debug(){
+    for(int i = 0; i < vehicles; i++){
+            std::cout << "Route " << i+1 << ": ";
+            for(int j = 0; j < routes[vehicles][i]; j++){
+                std::cout << routes[i][j] << " | ";
+            }
+            std::cout << std::endl;
+            std::cout << "Demand " << route_demand[i] << std::endl;
+        }
+}
+
 // Funcao de apoio para traceRoute que ordena os clientes da maneira desejada
 void sort() {
     struct client aux;
@@ -235,6 +246,7 @@ void VND(){
             }
             #ifdef DEBUG_VND
                 std::cout << "VND new cost " << getCost() << std::endl;
+                debug();
             #endif
             if(getCost() < formerCost)
                 k = 1;
@@ -253,7 +265,7 @@ bool nbhdL1(int* route, int routeSize) {
     std::cout << "Called nbhdL1" << std::endl;
     #endif
     int formerCost = routeCost(route, routeSize);
-    int i = (rand()%(routeSize - 2)) + 1, aux;
+    int i = (rand()%(routeSize - 3)) + 1, aux;
     aux = route[i];
     route[i] = route[i+1];
     route[i+1] = aux;
