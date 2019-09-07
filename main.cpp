@@ -10,6 +10,7 @@
 
 #define MAX_INT 2147483647
 
+
 std::string instance_name;
 int dimension, vehicles, capacity, totalCost;
 int *demand, *route_demand;
@@ -19,6 +20,53 @@ struct client {
     int index;
     int demand;
 } *clients;
+
+#ifdef DEBUG_PARSER
+void debugParser() {
+    for(int i = 0; i < dimension; i++) {
+            std::cout << clients[i].demand << std::endl;
+        }
+        for(int i = 0; i < dimension; i++) {
+            for(int j = 0; j < dimension; j++) {
+                std::cout << adjacency[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+}
+#endif
+
+#ifdef DEBUG_ROUTE
+void debugRoute(){
+    int *points = new int[dimension];
+
+        std::cout << "Instance " << instance_name << " Capacity " << capacity << std::endl;
+        for(int i = 0; i < vehicles; i++){
+            std::cout << "Route " << i+1 << ": ";
+            for(int j = 0; j < routes[vehicles][i]; j++){
+                std::cout << routes[i][j] << " | ";
+                points[ routes[i][j] ]++;
+            }
+            std::cout << std::endl;
+            std::cout << "Demand " << route_demand[i] << std::endl;
+        }
+
+        for(int i = 0; i < dimension; i++){
+            if(!points[i])
+            std::cout << "Missing " << i << std::endl;
+        }
+
+            delete[] points;
+}
+#endif
+
+#ifdef DEBUG_SORT
+void debugSort(){
+    for(int i = 0; i < dimension; i++) {
+        std::cout << clients[i].index << " " << clients[i].demand << std::endl;
+    }
+}
+#endif
 
 //Declaracao das funcoes
 void parseFile(std::string file_path);
@@ -34,7 +82,10 @@ bool nbhdL3(int* routeA, int* routeB, int RouteASize, int routeBSize, int indexA
 
 
 int main(int argc, char** argv) {
-    srand(time(nullptr));
+    int seed = time(nullptr);
+    srand(seed);
+    std::cout << "Seed  = " << seed << std::endl;
+
     std::string file_path(argv[1]);
     parseFile(file_path);
     traceRoute();
@@ -85,16 +136,7 @@ void parseFile(std::string file_path) {
     }
     file.close();
     #ifdef DEBUG_PARSER
-        for(int i = 0; i < dimension; i++) {
-            std::cout << clients[i].demand << std::endl;
-        }
-        for(int i = 0; i < dimension; i++) {
-            for(int j = 0; j < dimension; j++) {
-                std::cout << adjacency[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl;
+        debugParser();
     #endif  
 }
 
@@ -141,37 +183,8 @@ void traceRoute() {
         }
     }
     #ifdef DEBUG_ROUTE
-        int *points = new int[dimension];
-
-        std::cout << "Instance " << instance_name << " Capacity " << capacity << std::endl;
-        for(int i = 0; i < vehicles; i++){
-            std::cout << "Route " << i+1 << ": ";
-            for(int j = 0; j < routes[vehicles][i]; j++){
-                std::cout << routes[i][j] << " | ";
-                points[ routes[i][j] ]++;
-            }
-            std::cout << std::endl;
-            std::cout << "Demand " << route_demand[i] << std::endl;
-        }
-
-        for(int i = 0; i < dimension; i++){
-            if(!points[i])
-            std::cout << "Missing " << i << std::endl;
-        }
-
-            delete[] points;
+        debugRoute();
     #endif
-}
-
-void debug(){
-    for(int i = 0; i < vehicles; i++){
-            std::cout << "Route " << i+1 << ": ";
-            for(int j = 0; j < routes[vehicles][i]; j++){
-                std::cout << routes[i][j] << " | ";
-            }
-            std::cout << std::endl;
-            std::cout << "Demand " << route_demand[i] << std::endl;
-        }
 }
 
 // Funcao de apoio para traceRoute que ordena os clientes da maneira desejada
@@ -190,9 +203,7 @@ void sort() {
         clients[j+1].index = aux.index;
     }
     #ifdef DEBUG_SORT
-        for(int i = 0; i < dimension; i++) {
-            std::cout << clients[i].index << " " << clients[i].demand << std::endl;
-        }
+        debugSort();
     #endif
 }
 
@@ -234,19 +245,29 @@ void VND(){
                 }
                 break;
             case 2:
-                for(int i = 0, j = 1; i < vehicles - 1; i++, j++) {
+                do {
+                    i = rand()%vehicles;
+                    j = rand()%vehicles;
+                }while(i == j);
+                for(int k = 0; k < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, k++) {
                     nbhdL2(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i);
                 }
                 break;
             case 3:
-                for(int i = 0, j = 1; i < vehicles - 1; i++, j++) {
+                do {
+                    i = rand()%vehicles;
+                    j = rand()%vehicles;
+                }while(i == j);
+                for(int k = 0; k < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, k++) {
                     nbhdL3(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i, j);
                 }
                 break;
             }
             #ifdef DEBUG_VND
                 std::cout << "VND new cost " << getCost() << std::endl;
-                debug();
+            #ifdef DEBUG_ROUTE
+                debugRoute();
+            #endif
             #endif
             if(getCost() < formerCost)
                 k = 1;
@@ -342,9 +363,9 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     int costA = routeCost(routeA, routeASize), costB = routeCost(routeB, routeBSize);
     int target1A = 0, target2A = 0, target1B = 0, target2B;
     while(target1A == target2A) {
-        target1A = (rand()%(routeASize -1)) +1;
-        target2A = (rand()%(routeASize -1)) +1;
-        target1B = (rand()%(routeBSize -1)) +1;
+        target1A = (rand()%(routeASize -2)) +1;
+        target2A = (rand()%(routeASize -2)) +1;
+        target1B = (rand()%(routeBSize -2)) +1;
     }
     int dA = demand[routeA[target1A]] + demand[routeA[target2A]], dB = demand[routeB[target1B]];
     // Procura um B para trocar
