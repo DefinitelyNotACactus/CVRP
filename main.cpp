@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -39,24 +40,24 @@ void debugParser() {
 #ifdef DEBUG_ROUTE
 void debugRoute(){
     int *points = new int[dimension];
-
-        std::cout << "Instance " << instance_name << " Capacity " << capacity << std::endl;
-        for(int i = 0; i < vehicles; i++){
-            std::cout << "Route " << i+1 << ": ";
-            for(int j = 0; j < routes[vehicles][i]; j++){
-                std::cout << routes[i][j] << " | ";
-                points[ routes[i][j] ]++;
-            }
-            std::cout << std::endl;
-            std::cout << "Demand " << route_demand[i] << std::endl;
+    
+    std::cout << "Instance " << instance_name << " Capacity " << capacity << std::endl;
+    for(int i = 0; i < vehicles; i++){
+        std::cout << "Route " << i+1 << ": ";
+        for(int j = 0; j < routes[vehicles][i]; j++){
+            std::cout << routes[i][j] << " | ";
+            points[ routes[i][j] ]++;
         }
+        std::cout << std::endl;
+        std::cout << "Demand " << route_demand[i] << std::endl;
+    }
 
-        for(int i = 0; i < dimension; i++){
-            if(!points[i])
-            std::cout << "Missing " << i << std::endl;
-        }
-
-            delete[] points;
+    for(int i = 0; i < dimension; i++){
+        if(!points[i])
+        std::cout << "Missing " << i << std::endl;
+    }
+    
+    delete[] points;
 }
 #endif
 
@@ -83,6 +84,9 @@ bool nbhdL3(int* routeA, int* routeB, int RouteASize, int routeBSize, int indexA
 
 int main(int argc, char** argv) {
     int seed = time(nullptr);
+    if(argc > 2) { // Caso queiramos passar a seed como argumento
+        seed = atoi(argv[2]);
+    }
     srand(seed);
     std::cout << "Seed  = " << seed << std::endl;
 
@@ -116,7 +120,7 @@ void parseFile(std::string file_path) {
     file >> aux; // VEHICLES:
     file >> vehicles;
 
-    routes = new int*[vehicles+1];
+    routes = new int*[vehicles + 1];
     routes[vehicles] = new int[vehicles];
     route_demand = new int[vehicles];
 
@@ -314,11 +318,9 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     #endif
     int costA = routeCost(routeA, routeASize), costB = routeCost(routeB, routeBSize);
     int *exchange = new int[routeASize], matches = 0;
-    #ifndef __APPLE__
     for(int i = 0; i < routeASize; i++) {
         exchange[i] = 0;
     }
-    #endif
     for(int i = 1; i < routeASize - 1; i++) {
         for(int j = 1; j < routeBSize - 1; j++) {
             if( demand[routeB[j]] <= (demand[routeA[i]] + capacity - route_demand[indexA])
@@ -338,20 +340,31 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
         return false;
     }
 
-    int aux = routeA[r];
+#ifdef DEBUG_VND
+    std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
+#endif
+    int aux = routeA[r], aux2 = route_demand[indexA];
     routeA[r] = routeB[exchange[r]];
     routeB[exchange[r]] = aux;
-
-    if( routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
+    
+    route_demand[indexA] = route_demand[indexB];
+    route_demand[indexB] = aux2;
+    
+    if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
         #ifdef DEBUG_VND
-        std::cout << "New cost A= " << routeCost(routeA, routeASize) << " New cost B= " << routeCost(routeB, routeBSize) << std::endl;
+        std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
+        std::cout << "New cost A= " << routeCost(routeA, routeASize) << " New cost B= " << routeCost(routeB, routeBSize) << std::endl;
         #endif
         return true;
     } else {
         aux = routeA[r];
+        aux2 = route_demand[indexA];
         routeA[r] = routeB[exchange[r]];
         routeB[exchange[r]] = aux;
+        
+        route_demand[indexA] = route_demand[indexB];
+        route_demand[indexB] = aux2;
         return false;
     }
 }
@@ -380,25 +393,38 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     if(i == routeBSize - 1) {
         return false;
     }
-    int aux = routeA[target1A];
+#ifdef DEBUG_VND
+    std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
+#endif
+    int aux = routeA[target1A], aux2 = route_demand[indexA];
     routeA[target1A] = routeB[target1B];
     routeB[target1B] = aux;
     aux = routeA[target2A];
     routeA[target2A] = routeB[target2B];
     routeB[target2B] = aux;
-    if( routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
+    
+    route_demand[indexA] = route_demand[indexB];
+    route_demand[indexB] = aux2;
+    if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
         #ifdef DEBUG_VND
-        std::cout << "New cost A= " << routeCost(routeA, routeASize) << " New cost B= " << routeCost(routeB, routeBSize) << std::endl;
+#ifdef DEBUG_VND
+        std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
+        std::cout << "New cost A= " << routeCost(routeA, routeASize) << " New cost B= " << routeCost(routeB, routeBSize) << std::endl;
+#endif
         #endif
         return true;
     } else {
         aux = routeA[target1A];
+        aux2 = route_demand[indexA];
         routeA[target1A] = routeB[target1B];
         routeB[target1B] = aux;
         aux = routeA[target2A];
         routeA[target2A] = routeB[target2B];
         routeB[target2B] = aux;
+        
+        route_demand[indexA] = route_demand[indexB];
+        route_demand[indexB] = aux2;
         return false;
     }
 }     
