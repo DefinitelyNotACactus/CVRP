@@ -11,6 +11,7 @@
 #endif
 
 #define MAX_INT 2147483647
+#define distance(x1, y1, x2, y2) sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
 
 std::string instance_name;
 int dimension, vehicles, capacity, totalCost;
@@ -21,6 +22,12 @@ struct client {
     int index;
     int demand;
 } *clients;
+
+struct point {
+    int index;
+    int x;
+    int y;
+};
 
 #ifdef DEBUG_PARSER
 void debugParser() {
@@ -111,10 +118,16 @@ void parseFile(std::string file_path) {
         file >> clients[i].demand;
         demand[i] = clients[i].demand;
     }
-    file >> aux; // EDGE_WEIGHT_SECTION
+    file >> aux; // NODE_COORD_SECTION
+    struct point *points = new point[dimension];
     for(int i = 0; i < dimension; i++) {
-        for(int j = 0; j < dimension; j++) {
-            file >> adjacency[i][j];
+        file >> points[i].index >> points[i].x >> points[i].y;
+    }
+    for(int i = 0; i < dimension; i++) {
+        for(int j = i; j < dimension; j++) {
+            int d = distance(points[i].x, points[i].y, points[j].x, points[j].y);
+            adjacency[i][j] = d;
+            adjacency[j][i] = d;
         }
     }
     file.close();
@@ -243,13 +256,15 @@ int getCost() {
 //metaheuristica simulated anelling
 void simulatedAnelling(double alpha, int iterMax, double tempIni){
 	double temp = tempIni;
-	
+    std::cout << "entrei" << std::endl;
 	while(temp > 1) {
 		for(int i = 0; i < iterMax; i++) {
 			decideMovement(temp);
             //std::cout << temp << std::endl;
 		}
+        std::cout << temp << std::endl;
 		temp = alpha * temp;
+        std::cout << temp << std::endl;
 	}
     
 }
@@ -259,7 +274,7 @@ void decideMovement(double temp) {
 	//preco antigo
 	int cost = getCost();
 	
-	//calcular nova solu��o
+	//calcular nova solucao
 	int indexA, indexB, i, j , matches = 0;
 	
 	indexA = rand()%vehicles;
@@ -267,8 +282,8 @@ void decideMovement(double temp) {
 	
 	if(indexA == indexB) {
 		do{
-			i = (rand()%(routes[vehicles][indexA] -2)) +1;
-			j = (rand()%(routes[vehicles][indexB] -2)) +1;
+			i = (rand()%(routes[vehicles][indexA] - 2)) +1;
+			j = (rand()%(routes[vehicles][indexB] - 2)) +1;
 		} while(i == j);
 		
 		int aux = routes[indexA][i];
@@ -316,7 +331,9 @@ void decideMovement(double temp) {
 	//decisao de troca
 	if(newCost - cost >= 0) {
 		double u = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        std::cout << (newCost - cost) << " if 1 " << temp << "exp = " << exp(-(newCost - cost)/temp) << std::endl;
 		if(u >= exp(-(newCost - cost)/temp)) {
+            std::cout << "entrei no if" << std::endl;
 			//reverte movimento
 			if(indexA == indexB) {
 				int aux = routes[indexA][i];
@@ -331,7 +348,8 @@ void decideMovement(double temp) {
 		    	route_demand[indexB] = route_demand[indexB] - demand[routes[indexA][i]] + demand[routes[indexB][j]];
 		     	
 			}	
-		}	
+		}
+        //std::cout << "sai do if" << std::endl;
 	}
 }
       
