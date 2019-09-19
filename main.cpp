@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <ctime>
+#include <math.
 
 #ifndef __APPLE__
 #include <bits/stdc++.h>
@@ -456,4 +457,100 @@ void deallocate() {
     delete[] adjacency;
     delete[] routes;
 }
+
+
+
+
+void SumulatedAnelling(double alpha, int iterMax, int tempIni){
+	int iterCount = 0, temp = tempIni;
+	
+	while(temp > 0) {
+		for(int i = 0; i < iterMax, i++) {
+			decideMoviment(temp);
+		}
+		temp = alpha * temp;
+	}
+}
+
+void decideMoviement(int temp) {
+	//preco antigo
+	int cost = getCost();
+	
+	//calcular nova solução
+	int routeA, routeB, i, j , r, matches = 0;
+	
+	indexA = rand()%vehicles;
+	indexB= rand()%vehicles;
+	
+	if(routeA == routeB) {
+		do{
+			i = (rand()%(routes[indexA][vehicles] -2)) +1;
+			j = (rand()%(routes[indexB][vehicles] -2)) +1;
+		} while(i == j);
+		
+		int aux = routes[indexA][i];
+		routes[indexA][i] = routes[indexB][j];
+		routes[indexB][j] = aux;
+		
+	} else {
+		int *exchange = new int[routes[routeA][vehicles]];
+	    for(int i = 0; i < routeASize; i++) {
+	        exchange[i] = 0;
+	    }
+	    
+	    for(int i = 1; i < routes[routeA][vehicles] - 1; i++) {
+	        for(int j = 1; j < routes[routeB][vehicles] - 1; j++) {
+	            if( demand[routes[indexBB][j]] <= (demand[routez[indexA][i]] + capacity - route_demand[indexA])
+	                && demand[routes[indexA][i]] <= (demand[routes[indexB][j]] + capacity - route_demand[indexB]) ) {
+	               
+				    exchange[i] = j;
+	                matches++;
+	                continue;
+	                
+	            }
+	        }
+	    }
+	    
+	    if(matches) {
+	        do {
+	            r = rand()% routes[routeA][vehicles];
+	        } while(exchange[r] == 0 );
+	        
+	        int aux = routes[indexA][r];
+	    	routes[indexA][r] = routes[indexB][exchange[r]];
+	    	routeB[exchange[r]] = aux;
+	    	route_demand[indexA] = route_demand[indexA] - demand[routeB[exchange[r]]] + demand[routeA[r]];
+	    	route_demand[indexB] = route_demand[indexB] - demand[routeA[r]] + demand[routeB[exchange[r]]];
+	    } 
+	    
+	}
+	
+	//novo preco
+	int newCost = getCost();
+	
+	//decisao de troca
+	if(newCost - cost >= 0) {
+		double u = static_cast <float> (rand()) / static_cast <float> (RAND_MAX)
+		if(u >= exp(-(newCost - cost)/temp)) {
+			//reverte movimento
+			if(indexA == indexB) {
+				int aux = routes[indexA][i];
+				routes[indexA][i] = routes[indexB][j];
+				routes[indexB][j] = aux;
+			} else if(matches){
+			
+		        int aux = routes[indexA][r];
+		    	routes[indexA][r] = routes[indexB][exchange[r]];
+		    	routeB[exchange[r]] = aux;
+		    	route_demand[indexA] = route_demand[indexA] - demand[routeB[exchange[r]]] + demand[routeA[r]];
+		    	route_demand[indexB] = route_demand[indexB] - demand[routeA[r]] + demand[routeB[exchange[r]]];
+		     	
+			}	
+		}	
+	}
+}
+
+
+
+
 
