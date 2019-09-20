@@ -247,7 +247,6 @@ void simulatedAnelling(double alpha, int iterMax, double tempIni){
 	while(temp > 1) {
 		for(int i = 0; i < iterMax; i++) {
 			decideMovement(temp);
-            //std::cout << temp << std::endl;
 		}
 		temp = alpha * temp;
 	}
@@ -315,7 +314,7 @@ void decideMovement(double temp) {
 	
 	//decisao de troca
 	if(newCost - cost >= 0) {
-		double u = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		double u = (double) rand() / (double)(RAND_MAX);
 		if(u >= exp(-(newCost - cost)/temp)) {
 			//reverte movimento
 			if(indexA == indexB) {
