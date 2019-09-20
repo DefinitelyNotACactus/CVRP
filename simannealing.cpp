@@ -362,7 +362,7 @@ void decideMovement(double temp) {
     int newCost = getCost();
     //decisao de troca
     if(newCost - cost >= 0) {
-        double u = ((double) rand() / (RAND_MAX));
+        double u = (double) rand() / (double)(RAND_MAX);
         if(u >= exp(-(newCost - cost)/temp)) {
             //reverte movimento
             if(indexA == indexB) {
