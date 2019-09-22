@@ -148,6 +148,7 @@ void parseFile(std::string file_path, bool cup) {
                 adjacency[j][i] = d;
             }
         }
+        delete[] points;
     } else {
         for(int i = 0; i < dimension; i++) {
             for(int j = 0; j < dimension; j++) {
@@ -349,13 +350,13 @@ void decideMovement(double temp) {
                 i = rand()% routes[vehicles][indexA];
             } while(exchange[i] == 0);
             j = exchange[i];
-            delete[] exchange;
             int aux = routes[indexA][i];
             routes[indexA][i] = routes[indexB][j];
             routes[indexB][j] = aux;
             route_demand[indexA] = route_demand[indexA] - demand[routes[indexB][j]] + demand[routes[indexA][i]];
             route_demand[indexB] = route_demand[indexB] - demand[routes[indexA][i]] + demand[routes[indexB][j]];
         }
+        delete[] exchange;
     }
     
     //novo preco
