@@ -4,7 +4,8 @@
 #include <vector>
 #include <string>
 #include <ctime>
-#include <math.h>
+#include <chrono>
+#include <cmath>
 
 #ifndef __APPLE__
 #include <bits/stdc++.h>
@@ -64,39 +65,116 @@ int getCost();
 void simulatedAnelling(double alpha, int iterMax, double tempIni);
 void decideMovement(double temp);
 void deallocate();
+void buildSolution(int seed, std::string input, bool cup, int iterations);
+int getOptimal();
 
 int main(int argc, char** argv) {
-    int seed = time(nullptr);
-    bool cup = false;
-    if(argc > 2) { // Caso queiramos passar a seed como argumento
-        seed = atoi(argv[2]);
+    int seed, c, iterations;
+    if(argc < 4) {
+        std::cout << "Please use ./<executable name> <input file> <cvrp-cup (0 if cup)> <iterations> <seed (optional)>" << std::endl;
+        exit(-1);
     }
-    if(argc > 3) {
-        cup = true;
-    }
-    srand(seed);
     std::string file_path(argv[1]);
-    parseFile(file_path, cup);
-    traceRoute();
-    if(!cup) {
-        std::cout << "INSTANCE: " << instance_name << " TOTAL COST: " << getCost() << std::endl;
-    }
-    simulatedAnelling(0.95, 1000, 1500);
-    if(cup) {
-        std::cout << "INSTANCE: " << instance_name << std::endl;
-        std::cout << "SEED: " << seed << std::endl;
-        std::cout << "ROUTES: " << std::endl;
-        showRoutesCup();
-        std::cout << "COST: " << getCost() << std::endl;
+    c = atoi(argv[2]);
+    iterations = atoi(argv[3]);
+    if(argc > 4) { // Caso queiramos passar a seed como argumento
+        seed = atoi(argv[4]);
     } else {
-        std::cout << "SEED: " << seed << std::endl;
-        std::cout << "INSTANCE: " << instance_name << " TOTAL COST (SIMULATED ANELLING): " << getCost() << std::endl;
-        #ifdef DEBUG_ROUTE
-        showRoutes();
-        #endif
+        seed = 0;
     }
-    deallocate();
+    buildSolution(seed, file_path, (c == 0), iterations);
     return 0;
+}
+
+void buildSolution(int seed, std::string input, bool cup, int iterations) {
+    bool s = (seed == 0);
+    int current_seed = seed, best_seed, heuristic_cost, current_cost, best_cost = MAX_INT;
+    std::chrono::duration<float> sum;
+    if(!s) {
+        srand(current_seed);
+    }
+    for(int i = 0; i < iterations; i++) {
+        auto start = std::chrono::steady_clock::now();
+        if(s) {
+            current_seed = time(nullptr);
+            srand(current_seed);
+        }
+        parseFile(input, cup);
+        traceRoute();
+        if(!cup && !i) {
+            heuristic_cost = getCost();
+        }
+        simulatedAnelling(0.99, 1000, 5000);
+        current_cost = getCost();
+        if(cup) {
+            std::cout << "INSTANCE: " << instance_name << std::endl;
+            std::cout << "SEED: " << current_seed << std::endl;
+            std::cout << "ROUTES: " << std::endl;
+            showRoutesCup();
+            std::cout << "COST: " << current_cost << std::endl;
+        } else {
+            #ifdef SHOW_ITERATION
+            std::cout << "SEED: " << current_seed << std::endl;
+            std::cout << "INSTANCE: " << instance_name << " TOTAL COST (SIMULATED ANEALLING): " << current_cost << std::endl;
+            #endif
+            #ifdef DEBUG_ROUTE
+            showRoutes();
+            #endif
+        }
+        if(current_cost < best_cost) {
+            best_cost = current_cost;
+            best_seed = current_seed;
+        }
+        deallocate();
+        auto end = std::chrono::steady_clock::now();
+        if(!i) {
+            sum = (end - start);
+        } else {
+            sum += (end - start);
+        }
+    }
+    if(iterations > 0) {
+        int opt = getOptimal();
+        double gap;
+        std::cout << "INSTANCE: " << instance_name << std::endl;
+        std::cout << "OPTIMAL COST: " << opt << std::endl;
+        std::cout << "TOTAL COST (HEURISTIC): " << heuristic_cost << std::endl;
+        if(!cup) {
+            gap = ((heuristic_cost - opt) / (double) opt) * 100;
+            std::cout << "GAP (HEURISTIC): " << gap << std::endl;
+        }
+        #ifdef DEBUG_SEED
+        std::cout << "BEST SEED: " << best_seed << std::endl;
+        #endif
+        std::cout << "BEST COST: " << best_cost << std::endl;
+        std::cout << "AVERAGE TIME: " << sum.count() / iterations << " secs (Iterations = " << iterations << ")" << std::endl;
+        if(!cup) {
+            gap = ((best_cost - opt) / (double) opt) * 100;
+            std::cout << "GAP (SIMULATED ANNEALING): " << gap << std::endl;
+        }
+    }
+}
+
+// Funcao hardcoded para retornar o valor das solucoes otimas
+int getOptimal() {
+    if(instance_name.compare("P-n16-k8") == 0) {
+        return 450;
+    } else if(instance_name.compare("P-n19-k2") == 0) {
+        return 212;
+    } else if(instance_name.compare("P-n20-k2") == 0) {
+        return 216;
+    } else if(instance_name.compare("P-n23-k8") == 0) {
+        return 529;
+    } else if(instance_name.compare("P-n55-k7") == 0) {
+        return 510;
+    } else if(instance_name.compare("P-n51-k10") == 0) {
+        return 696;
+    } else if(instance_name.compare("P-n50-k10") == 0) {
+        return 741;
+    } else if(instance_name.compare("P-n45-k5") == 0) {
+        return 568;
+    }
+    return -1;
 }
 
 // Funcao para fazer o parsing do arquivo de entrada
