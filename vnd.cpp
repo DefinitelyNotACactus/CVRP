@@ -24,15 +24,15 @@ struct client {
 #ifdef DEBUG_PARSER
 void debugParser() {
     for(int i = 0; i < dimension; i++) {
-            std::cout << clients[i].demand << std::endl;
-        }
-        for(int i = 0; i < dimension; i++) {
-            for(int j = 0; j < dimension; j++) {
-                std::cout << adjacency[i][j] << " ";
-            }
-            std::cout << std::endl;
+        std::cout << clients[i].demand << std::endl;
+    }
+    for(int i = 0; i < dimension; i++) {
+        for(int j = 0; j < dimension; j++) {
+            std::cout << adjacency[i][j] << " ";
         }
         std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }
 #endif
 
@@ -100,11 +100,11 @@ void parseFile(std::string file_path) {
     }
     file >> aux; // VEHICLES:
     file >> vehicles;
-
+    
     routes = new int*[vehicles + 1];
     routes[vehicles] = new int[vehicles];
     route_demand = new int[vehicles];
-
+    
     file >> aux; // CAPACITY:
     file >> capacity;
     file >> aux; // DEMAND_SECTION:
@@ -120,9 +120,9 @@ void parseFile(std::string file_path) {
         }
     }
     file.close();
-    #ifdef DEBUG_PARSER
-        debugParser();
-    #endif  
+#ifdef DEBUG_PARSER
+    debugParser();
+#endif
 }
 
 // Funcao para criar as rotas validas iniciais
@@ -132,19 +132,19 @@ void traceRoute() {
         visited[i] = 0;
     }
     sort(); // Faz o sort dos clientes em ordem decrescente de demanda
-
+    
     for(int v = 0; v < vehicles; v++ ) {
         int vcapacity = 0;
         std::vector<int> vroute;
         vroute.push_back(0);
-
+        
         for(int i = 1; i < dimension ; i++) {
             if(clients[i].demand <= capacity - vcapacity
-                && !visited[clients[i].index]) {
-                    vroute.push_back(clients[i].index);
-                    visited[clients[i].index] = 1;
-                    vcapacity += clients[i].demand;
-                }
+               && !visited[clients[i].index]) {
+                vroute.push_back(clients[i].index);
+                visited[clients[i].index] = 1;
+                vcapacity += clients[i].demand;
+            }
         }
         vroute.push_back(0);
         route_demand[v] = vcapacity;
@@ -153,14 +153,14 @@ void traceRoute() {
         std::copy(vroute.begin(),vroute.end(), routes[v]);
         vroute.erase(vroute.begin(), vroute.end());
     }
-
+    
     for(int r = 0; r < vehicles; r++) {
         greedyBestRoute(r);
     }
     
-    #ifdef DEBUG_ROUTE
-        showRoutes();
-    #endif
+#ifdef DEBUG_ROUTE
+    showRoutes();
+#endif
 }
 
 // Funcao gulosa para melhorar a rota
@@ -192,10 +192,10 @@ void showRoutes(){
         std::cout << std::endl;
         std::cout << "Demand " << route_demand[i] << std::endl;
     }
-
+    
     for(int i = 0; i < dimension; i++){
         if(!points[i])
-        std::cout << "Missing " << i << std::endl;
+            std::cout << "Missing " << i << std::endl;
     }
     
     delete[] points;
@@ -216,9 +216,9 @@ void sort() {
         clients[j+1].demand = aux.demand;
         clients[j+1].index = aux.index;
     }
-    #ifdef DEBUG_SORT
-        debugSort();
-    #endif
+#ifdef DEBUG_SORT
+    debugSort();
+#endif
 }
 
 // Funcao que calcula o preco de uma rota
@@ -227,9 +227,9 @@ int routeCost(int* route, int routeSize) {
     for(i = 0; i < routeSize -1; i++) {
         sum+= adjacency[ route[i] ][ route[i+1] ];
     }
-    #ifdef DEBUG_COST
-            std::cout << "Route " << i << " cost: " << sum << std::endl;
-    #endif
+#ifdef DEBUG_COST
+    std::cout << "Route " << i << " cost: " << sum << std::endl;
+#endif
     return sum;
 }
 
@@ -242,7 +242,7 @@ int getCost() {
     return sum;
 }
 
- //Algoritmo VND
+//Algoritmo VND
 void VND(){
     int i = 0, j = 0,k = 0;
     bool improvemment = true;
@@ -253,36 +253,36 @@ void VND(){
             int formerCost = getCost();
             i = j = 0;
             switch (k) {
-            case 1:
-                for(int i = 0; i < vehicles; i++) {
-                    nbhdL1(routes[i],routes[vehicles][i]);
-                }
-                break;
-            case 2:
-                do {
-                    i = rand()%vehicles;
-                    j = rand()%vehicles;
-                }while(i == j);
-                for(int l = 0; l < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, l++) {
-                    nbhdL2(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i, j);
-                }
-                break;
-            case 3:
-                do {
-                    i = rand()%vehicles;
-                    j = rand()%vehicles;
-                }while(i == j);
-                for(int l = 0; l < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, l++) {
-                    nbhdL3(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i, j);
-                }
-                break;
+                case 1:
+                    for(int i = 0; i < vehicles; i++) {
+                        nbhdL1(routes[i],routes[vehicles][i]);
+                    }
+                    break;
+                case 2:
+                    do {
+                        i = rand()%vehicles;
+                        j = rand()%vehicles;
+                    }while(i == j);
+                    for(int l = 0; l < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, l++) {
+                        nbhdL2(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i, j);
+                    }
+                    break;
+                case 3:
+                    do {
+                        i = rand()%vehicles;
+                        j = rand()%vehicles;
+                    }while(i == j);
+                    for(int l = 0; l < vehicles ; i = (i+1)%vehicles , j = (j+1)%vehicles, l++) {
+                        nbhdL3(routes[i], routes[j],routes[vehicles][i], routes[vehicles][j], i, j);
+                    }
+                    break;
             }
-            #ifdef DEBUG_VND
-                std::cout << "VND new cost " << getCost() << " k = " << k << std::endl;
-            #ifdef DEBUG_ROUTE
-                showRoutes();
-            #endif
-            #endif
+#ifdef DEBUG_VND
+            std::cout << "VND new cost " << getCost() << " k = " << k << std::endl;
+#ifdef DEBUG_ROUTE
+            showRoutes();
+#endif
+#endif
             if(getCost() < formerCost) {
                 improvemment = true;
                 k = 1;
@@ -293,23 +293,23 @@ void VND(){
     }
 }
 
- // Funcao que cria um vizinho do nivel N1 aleatorio e calcula se esse vizinho
- // tem um custo menor que a antiga solucao
+// Funcao que cria um vizinho do nivel N1 aleatorio e calcula se esse vizinho
+// tem um custo menor que a antiga solucao
 bool nbhdL1(int* route, int routeSize) {
-    #ifdef DEBUG_VND
+#ifdef DEBUG_VND
     std::cout << "Called nbhdL1" << std::endl;
-    #endif
+#endif
     int formerCost = routeCost(route, routeSize);
     int i = (rand()%(routeSize - 3)) + 1, aux;
     aux = route[i];
     route[i] = route[i+1];
     route[i+1] = aux;
- 
+    
     if( routeCost(route, routeSize) < formerCost ) {
-        #ifdef DEBUG_VND
+#ifdef DEBUG_VND
         std::cout << "New cost " << routeCost(route, routeSize) << std::endl;
         std::cout << "Old cost " << formerCost << std::endl;
-        #endif
+#endif
         return true;
     } else {
         aux = route[i];
@@ -317,15 +317,15 @@ bool nbhdL1(int* route, int routeSize) {
         route[i+1] = aux;
         return false;
     }
-   
+    
 }
- 
- // Funcao que cria um par vizinhos do nivel N2 aleatorio e calcula se esses vizinhos
- // tem custos menores que as antigas solucoes
+
+// Funcao que cria um par vizinhos do nivel N2 aleatorio e calcula se esses vizinhos
+// tem custos menores que as antigas solucoes
 bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA, int indexB) {
-    #ifdef DEBUG_VND
+#ifdef DEBUG_VND
     std::cout << "Called nbhdL2" << std::endl;
-    #endif
+#endif
     int costA = routeCost(routeA, routeASize), costB = routeCost(routeB, routeBSize);
     int *exchange = new int[routeASize], matches = 0;
     for(int i = 0; i < routeASize; i++) {
@@ -334,7 +334,7 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     for(int i = 1; i < routeASize - 1; i++) {
         for(int j = 1; j < routeBSize - 1; j++) {
             if( demand[routeB[j]] <= (demand[routeA[i]] + capacity - route_demand[indexA])
-                && demand[routeA[i]] <= (demand[routeB[j]] + capacity - route_demand[indexB]) ) {
+               && demand[routeA[i]] <= (demand[routeB[j]] + capacity - route_demand[indexB]) ) {
                 exchange[i] = j;
                 matches++;
                 continue;
@@ -349,10 +349,10 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     } else {
         return false;
     }
-
-    #ifdef DEBUG_VND
-        std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
-    #endif
+    
+#ifdef DEBUG_VND
+    std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
+#endif
     int aux = routeA[r], aux2 = route_demand[indexA];
     routeA[r] = routeB[exchange[r]];
     routeB[exchange[r]] = aux;
@@ -363,11 +363,11 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
         nbhdL1(routes[indexA],routes[vehicles][indexA]);
         nbhdL1(routes[indexB],routes[vehicles][indexB]);
-        #ifdef DEBUG_VND
+#ifdef DEBUG_VND
         std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
         std::cout << "New cost A= " << routeCost(routeA, routeASize) << " New cost B= " << routeCost(routeB, routeBSize) << std::endl;
-        #endif
+#endif
         return true;
     } else {
         aux = routeA[r];
@@ -380,12 +380,12 @@ bool nbhdL2(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
         return false;
     }
 }
- 
- // Troca 2 clientes de uma rota A por 2 de uma rota B (ou vice-versa)
+
+// Troca 2 clientes de uma rota A por 2 de uma rota B (ou vice-versa)
 bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA, int indexB) {
-    #ifdef DEBUG_VND
+#ifdef DEBUG_VND
     std::cout << "Called nbhdL3" << std::endl;
-    #endif
+#endif
     int costA = routeCost(routeA, routeASize), costB = routeCost(routeB, routeBSize);
     int target1A = 0, target2A = 0, target1B = 0, target2B;
     while(target1A == target2A) {
@@ -405,27 +405,27 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
     if(i == routeBSize - 1) {
         return false;
     }
-    #ifdef DEBUG_VND
-        std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
-    #endif
+#ifdef DEBUG_VND
+    std::cout << "Old Demand A= " << route_demand[indexA] << " Old Demand B= " << route_demand[indexB] << std::endl;
+#endif
     int aux = routeA[target1A], aux2 = route_demand[indexA];
     routeA[target1A] = routeB[target1B];
     routeB[target1B] = aux;
     aux = routeA[target2A];
     routeA[target2A] = routeB[target2B];
     routeB[target2B] = aux;
-
+    
     route_demand[indexA] = route_demand[indexA] - demand[routeB[target1B]] - demand[routeB[target2B]] + demand[routeA[target1A]] + demand[routeA[target2A]];
     route_demand[indexB] = route_demand[indexB] - demand[routeA[target1A]] - demand[routeA[target2A]] + demand[routeB[target1B]] + demand[routeB[target2B]];
-
+    
     if(route_demand[indexA] <= capacity && route_demand[indexB] <= capacity && routeCost(routeA, routeASize) + routeCost(routeB, routeBSize) <= costA + costB ) {
         nbhdL1(routes[indexA],routes[vehicles][indexA]);
         nbhdL1(routes[indexB],routes[vehicles][indexB]);
-    #ifdef DEBUG_VND
+#ifdef DEBUG_VND
         std::cout << "New Demand A= " << route_demand[indexA] << " New Demand B= " << route_demand[indexB] << std::endl;
         std::cout << "Old cost A= " << costA << " Old cost B= " << costB << std::endl;
         std::cout << "New cost A= " << routeCost(routeA, routeASize) << " New cost B= " << routeCost(routeB, routeBSize) << std::endl;
-    #endif
+#endif
         return true;
     } else {
         aux = routeA[target1A];
@@ -440,7 +440,7 @@ bool nbhdL3(int* routeA, int* routeB, int routeASize, int routeBSize, int indexA
         route_demand[indexB] = route_demand[indexB] - demand[routeA[target1A]] - demand[routeA[target2A]] + demand[routeB[target1B]] + demand[routeB[target2B]];
         return false;
     }
-}     
+}
 
 // Funcao que desaloca todos os recursos utilizados durante esse programa
 void deallocate() {
@@ -456,4 +456,3 @@ void deallocate() {
     delete[] adjacency;
     delete[] routes;
 }
-
