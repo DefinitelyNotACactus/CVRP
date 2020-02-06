@@ -22,6 +22,10 @@ int **adjacency, **routes;
 struct client {
     int index;
     int demand;
+    
+    bool operator <(const client &c) const { // Comparar clientes pela demanda
+        return demand < c.demand;
+    }
 } *clients;
 
 struct point {
@@ -133,7 +137,8 @@ void buildSolution(int seed, std::string input, bool cup, int iterations) {
             sum += (end - start);
         }
     }
-    if(iterations > 0) {
+    
+    if(iterations >= 1) {
         int opt = getOptimal();
         double gap;
         std::cout << "INSTANCE: " << instance_name << std::endl;
@@ -246,7 +251,7 @@ void traceRoute() {
     for(int i = 0; i < dimension; i++) {
         visited[i] = 0;
     }
-    sort(); // Faz o sort dos clientes em ordem decrescente de demanda
+    std::sort(clients, clients + dimension); // Faz o sort dos clientes em ordem decrescente de demanda
     actual_vehicles = 0;
     for(int v = 0; v < vehicles; v++ ) {
         int vcapacity = 0;
@@ -332,26 +337,6 @@ void showRoutesCup() {
         }
     }
     std::cout << std::endl;
-}
-
-// Funcao de apoio para traceRoute que ordena os clientes da maneira desejada
-void sort() {
-    struct client aux;
-    for(int i = 1, j; i < dimension; i++) {
-        j = i - 1;
-        aux.demand = clients[i].demand;
-        aux.index = clients[i].index;
-        while(j > 0 && clients[j].demand < aux.demand) {
-            clients[j+1].index = clients[j].index;
-            clients[j+1].demand = clients[j].demand;
-            j--;
-        }clients[j+1].demand = aux.demand;
-        clients[j+1].demand = aux.demand;
-        clients[j+1].index = aux.index;
-    }
-#ifdef DEBUG_SORT
-    debugSort();
-#endif
 }
 
 // Funcao que calcula o preco de uma rota
